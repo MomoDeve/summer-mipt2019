@@ -1,0 +1,105 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <unordered_map>
+#include <string>
+#include <sstream>
+#include <algorithm>
+
+#define EMPTY -1
+
+using namespace std;
+
+vector<vector<int> > Gr;
+vector<int> pr, used;
+
+bool dfs(int v)
+{
+	if (used[v]) return false;
+	used[v] = true;
+	for (int u : Gr[v])
+	{
+		if (pr[u] == EMPTY || dfs(pr[u]))
+		{
+			pr[u] = v;
+			return true;
+		}
+	}
+	return false;
+}
+
+unordered_map<string, size_t> p1, p2;
+
+size_t p1_int = 0, p2_int = 0;
+
+int main()
+{
+	stringstream ss;
+	int T;
+	string s1, s2;
+	cin >> T;
+	int N;
+	Gr.reserve(1000);
+	for (int j = 0; j < T; j++)
+	{
+		cin >> N;
+		int ans = 0;
+		Gr.resize(N);
+		pr.assign(N, EMPTY);
+		for (int i = 0; i < N; i++)
+		{
+			cin >> s1 >> s2;
+			auto it1 = p1.find(s1);
+			auto it2 = p2.find(s2);
+			if (it1 == p1.end())
+			{
+				p1.insert({ s1, p1_int++ });
+			}
+			if (it2 == p2.end())
+			{
+				p2.insert({ s2, p2_int++ });
+			}
+			Gr[p1[s1]].push_back(p2[s2]);
+		}
+		for (int i = 0; i < p1_int; i++)
+		{
+			used.assign(N, false);
+			dfs(i);
+		}
+		set<int> l, r;
+
+		for (int i = 0; i < p2_int; i++)
+		{
+			if (pr[i] != EMPTY)
+			{
+				r.insert(i);
+				l.insert(pr[i]);
+			}
+		}
+		for (int i = 0; i < p1_int; i++)
+		{
+			for (int u : Gr[i])
+			{
+				if (pr[u] != i && l.find(i) != l.end() && r.find(u) != r.end())
+					ans++;
+				if (pr[u] == i)
+				{
+					pr[u] = EMPTY;
+				}l.insert(i); r.insert(u);
+			}
+		}
+		ss << "Case #" << j + 1 << ": " << ans << endl;
+		ans = 0;
+
+
+		pr.clear();
+		used.clear();
+		Gr.clear();
+		p1.clear(); p2.clear();
+		p1_int = p2_int = 0;
+	}
+	cout << ss.str();
+	system("pause");
+}
