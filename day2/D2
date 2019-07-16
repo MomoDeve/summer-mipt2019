@@ -1,0 +1,90 @@
+#include<iostream>
+#include<vector>
+#include<cmath>
+
+using namespace std;
+
+vector<long long>res;
+int mod;
+
+class matrix
+{
+	long long A[10][10];
+public:
+	void init(int l, int r)
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				if (abs(i - j) >= l && abs(i - j) <= r) A[i][j] = 1;
+				else A[i][j] = 0;
+			}
+		}
+	}
+	matrix operator* (matrix other)
+	{
+		matrix res;
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				res[i][j] = 0;
+				for (int k = 0; k < 10; k++)
+				{
+					res[i][j] = (res[i][j] + A[i][k] * other[k][j]) % mod;
+				}
+			}
+		}
+		return res;
+	}
+	long long* operator[] (int index)
+	{
+		return A[index];
+	}
+};
+
+matrix pow(matrix& A, long long n)
+{
+	vector<matrix> stack;
+	while (n > 1)
+	{
+		if (n % 2 == 1) stack.push_back(A);
+		A = A * A;
+		n /= 2;
+	}
+	for (size_t i = 0; i < stack.size(); i++)
+	{
+		A = A * stack[i];
+	}
+	return A;
+}
+
+int main()
+{
+	long long l, r, T, n;
+	cin >> T;
+	res.reserve(T);
+	for (size_t i = 0; i < T; i++)
+	{
+		long long sum = 0;
+		cin >> n >> l >> r >> mod;
+		matrix A;
+		A.init(l, r);
+		matrix B = pow(A, n - 1);
+		for (size_t j = 1; j < 10; j++)
+		{
+			for (size_t k = 0; k < 10; k++)
+			{
+				sum = (sum + B[j][k]) % mod;
+			}
+		}
+		res.push_back(sum);
+	}
+	for (size_t i = 0; i < res.size(); i++)
+	{
+		cout << res[i] << endl;
+	}
+	system("pause");
+	return 0;
+}
