@@ -1,0 +1,109 @@
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+#include <string>
+
+using namespace std;
+
+#define BUSY '.'
+#define EMPTY '*'
+
+long long component_count = 0;
+vector<string> Gr;
+vector<vector<int> > used;
+vector<vector<pair<int, int> > > pr;
+
+bool check_bounds(int i, int j)
+{
+	return i >= 0 && j >= 0 && i < Gr.size() && j < Gr[i].size() && Gr[i][j] == EMPTY;
+}
+
+bool dfs(int i, int j)
+{
+	if (used[i][j]) return false;
+	used[i][j] = true;
+	//Gr[i][j] = BUSY;
+	if (check_bounds(i - 1, j))
+	{
+		if (pr[i - 1][j].first == -1 || dfs(pr[i - 1][j].first, pr[i - 1][j].second))
+		{
+			pr[i - 1][j] = { i, j };
+			return true;
+		}
+	}
+	if (check_bounds(i + 1, j))
+	{
+		if (pr[i + 1][j].first == -1 || dfs(pr[i + 1][j].first, pr[i + 1][j].second))
+		{
+			pr[i + 1][j] = { i, j };
+			return true;
+		}
+	}
+	if (check_bounds(i, j - 1))
+	{
+		if (pr[i][j - 1].first == -1 || dfs(pr[i][j - 1].first, pr[i][j - 1].second))
+		{
+			pr[i][j - 1] = { i, j };
+			return true;
+		}
+	}
+	if (check_bounds(i, j + 1))
+	{
+		if (pr[i][j + 1].first == -1 || dfs(pr[i][j + 1].first, pr[i][j + 1].second))
+		{
+			pr[i][j + 1] = { i, j };
+			return true;
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	int n, m, a, b;
+	long long res = 0;
+	cin >> n >> m >> a >> b;
+	Gr.resize(n);
+	used.resize(n, vector<int>(m));
+	pr.resize(n, vector<pair<int, int> >(m, { -1, -1 }));
+	for (int i = 0; i < n; i++)
+		cin >> Gr[i];
+	if (2 * b <= a)
+	{
+		for (const auto& vec : Gr)
+			for (char c : vec)
+				if (c == EMPTY)
+					res += b;
+	}
+	else
+	{
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < m; j++)
+			{
+				if (Gr[i][j] == EMPTY)
+				{
+					component_count++;
+					dfs(i, j);
+					used.assign(used.size(), vector<int>(m, false));
+				}
+			}
+		}
+		used.assign(used.size(), vector<int>(m, false));
+		int par_count = 0;
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < m; j++)
+			{
+				if (pr[i][j].first != -1)
+				{
+					par_count++;
+				}
+			}
+		}
+		res = (component_count - par_count) * b + par_count / 2 * a;
+	}
+	cout << res << endl;
+	system("pause");
+}
