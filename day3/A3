@@ -1,0 +1,80 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+
+using namespace std;
+
+vector<vector<vector<int> > > dp;
+
+#define LOSE 0
+#define EMPTY -1
+#define WIN 1
+
+stringstream ss;
+
+bool G(int n3, int n2, int n1, bool printTurns = false)
+{
+#define CUR dp[n3][n2][n1]
+	if (CUR != EMPTY) return CUR;
+
+	int R[6] = { 0, 0, 0, 0, 0, 0 };
+
+	if (n3 > 0)
+	{
+		R[0] = !G(n3 - 1, n2 + 1, n1);
+		R[1] = !G(n3 - 1, n2, n1 + 1);
+		R[2] = !G(n3 - 1, n2, n1);
+	}
+	if (n2 > 0)
+	{
+		R[3] = !G(n3, n2 - 1, n1 + 1);
+		R[4] = !G(n3, n2 - 1, n1);
+	}
+	if (n1 > 0)
+	{
+		R[5] = !G(n3, n2, n1 - 1);
+	}
+	if(R[0] || R[1] || R[2] || R[3] || R[4] || R[5])
+	{
+		CUR = WIN;
+		if (printTurns)
+		{
+			int count = 0;
+			for (int i = 0; i < 6; i++) count += R[i];
+			ss << count << endl;
+			if (R[3]) ss << "2 1" << endl;
+			if (R[4]) ss << "2 2" << endl;
+			if (R[0]) ss << "3 1" << endl;
+			if (R[1]) ss << "3 2" << endl;
+			if (R[2]) ss << "3 3" << endl;
+		}
+	}
+	else
+	{
+		CUR = LOSE;
+	}
+	return CUR;
+}
+	
+
+int main()
+{
+	int N, M;
+	cin >> N >> M;
+	dp.resize(101, vector<vector<int>>(202, vector<int>(303, -1)));
+	dp[0][0][0] = LOSE;
+	if (G(M, N, 0, true))
+	{
+		cout << 1 << endl;
+		cout << ss.str();
+	}
+	else
+	{
+		cout << 2 << endl;
+	}
+	system("pause");
+}
