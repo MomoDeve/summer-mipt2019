@@ -1,0 +1,53 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+
+using namespace std;
+
+vector<int> Price;
+vector<vector<int> > Gr;
+
+int P(int);
+int G(int);
+
+int F(int n)
+{
+	if (Gr[n].size() == 0) return Price[n];
+	int cur = INT_MAX;
+	for (int u : Gr[n])
+	{
+		cur = min(cur, G(u));
+	}
+	return cur;
+}
+
+int G(int n)
+{
+	int cur = Price[n];
+	for (int u : Gr[n])
+	{
+		cur = max(cur, F(u));
+	}
+	return cur;
+}
+
+int main()
+{
+	int N;
+	cin >> N;
+	Price.resize(N);
+	Gr.resize(N);
+	for (int i = 0; i < N; i++)
+	{
+		int v;
+		cin >> v >> Price[i];
+		if (v != 0) Gr[v - 1].push_back(i);
+	}
+	cout << G(0) << endl;
+	system("pause");
+}
