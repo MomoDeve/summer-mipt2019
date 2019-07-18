@@ -1,0 +1,133 @@
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> sortCyclicShifts(const string& s)
+{
+	size_t n = s.size();
+	vector<int> a(n), na(n), h, c, nc; // shifts, sort index, buckets, color, c-addition
+	h.assign(256, 0);
+	for (int i = 0; i < n; i++)
+	{
+		h[s[i]]++;
+	}
+	for (int i = 1; i < 256; i++)
+	{
+		h[i] += h[i - 1];
+	}
+	for (int i = n - 1; i >= 0; i--)
+	{
+		a[--h[s[i]]] = i;
+	}
+	c.assign(n, 0);
+	h.assign(1, 1);
+	c[a[0]] = 0;
+	for (int i = 1; i < n; i++)
+	{
+		if (s[a[i]] == s[a[i - 1]])
+		{
+			c[a[i]] = c[a[i - 1]];
+			h.back()++;
+		}
+		else
+		{
+			c[a[i]] = c[a[i - 1]] + 1;
+			h.push_back(h.back() + 1);
+		}
+	}
+	for (int l = 1; l < n; l *= 2)
+	{
+		for (int i = n - 1; i >= 0; i--)
+		{
+			int v = a[i] - l;
+			if (v < 0) v += n;
+			int index = --h[c[v]];
+			na[index] = v;
+		}
+		a.swap(na);
+		nc.assign(n, -1);
+		nc[a[0]] = 0;
+		h.assign(1, 1);
+		for (int i = 1; i < n; i++)
+		{
+			if (c[a[i]] == c[a[i - 1]] && c[(a[i] + l) % n] == c[(a[i - 1] + l) % n])
+			{
+				nc[a[i]] = nc[a[i - 1]];
+				h.back()++;
+			}
+			else
+			{
+				nc[a[i]] = nc[a[i - 1]] + 1;
+				h.push_back(h.back() + 1);
+			}
+		}
+		c.swap(nc);
+	}
+	return a;
+}
+
+vector<int> buildSuffixArray(string s)
+{
+	s.push_back('$');
+	vector<int> A = sortCyclicShifts(s);
+	A.erase(A.begin());
+	return A;
+}
+
+
+vector<int> buildLCP(const string& s, vector<int>& suf)
+{
+	int n = s.size();
+	vector<int> lcp(n), pos(n);
+	for (int i = 0; i < n; i++)
+	{
+		pos[suf[i]] = i;
+	}
+	int k = 0;
+	for (int i = 0; i < n; i++)
+	{
+		if (k > 0)
+		{
+			k--;
+		}
+		if (pos[i] == n - 1)
+		{
+			lcp[n - 1] = -1;
+			k = 0;
+		}
+		else
+		{
+			int j = suf[pos[i] + 1];
+			while (max(i + k, j + k) < n && s[i + k] == s[j + k])
+			{
+				k++;
+			}
+			lcp[pos[i]] = k;
+		}
+	}
+	lcp.pop_back();
+	return lcp;
+}
+
+int main()
+{
+	string s;
+	cin >> s;
+	auto suf = buildSuffixArray(s);
+	auto lcp = buildLCP(s, suf);
+	long long res = 0;
+	int n = s.size();
+	for (int i = 0; i < n; i++)
+	{
+		res += n - suf[i];
+	}
+	for (int i = 0; i < n - 1; i++)
+	{
+		res -= lcp[i];
+	}
+	cout << res << endl;
+	system("pause");
+}
