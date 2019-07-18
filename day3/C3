@@ -1,0 +1,124 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+
+using namespace std;
+
+struct node
+{
+	vector<int> to;
+	int count;
+};
+
+vector<vector<int> > Gr;
+vector<node> revGr;
+vector<int> nodes;
+vector<int> used;
+
+#define EMPTY 0
+#define WIN 1
+#define LOSE 2
+#define DRAW 3
+
+void dfs(int v)
+{
+	if (used[v] != EMPTY) return;
+	used[v] = DRAW;
+	for (int u : Gr[v])
+	{
+		dfs(u);
+	}
+	if (Gr[v].empty())
+	{
+		used[v] = LOSE;
+		nodes.push_back(v);
+	}
+}
+
+void revDfs(int v, bool fromLose, bool init = false)
+{
+	if (!init)
+	{
+		if (fromLose)
+		{
+			used[v] = WIN;
+		}
+		else
+		{
+			revGr[v].count--;
+			if (revGr[v].count == 0)
+			{
+				used[v] = LOSE;
+			}
+		}
+	}
+	if (used[v] != DRAW)
+	{
+		for (int u : revGr[v].to)
+		{
+			if (used[u] == DRAW)
+				revDfs(u, used[v] == LOSE);
+		}
+	}
+}
+
+int main()
+{
+	ios_base::sync_with_stdio(false);
+	cin.tie(0);
+	stringstream ss;
+	int n, m, a, b;
+	Gr.reserve(300000);
+	revGr.reserve(300000);
+	used.reserve(300000);
+	nodes.reserve(300000);
+	while (cin >> n)
+	{
+		Gr.resize(n);
+		revGr.resize(n);
+		used.assign(n, EMPTY);
+		cin >> m;
+		for (int i = 0; i < m; i++)
+		{
+			cin >> a >> b;
+			Gr[a - 1].push_back(b - 1);
+		}
+		for (int i = 0; i < n; i++)
+		{
+			if (used[i] == EMPTY) dfs(i);
+		}
+		for (int i = 0; i < n; i++)
+		{
+			for (int u : Gr[i])
+			{
+				revGr[u].to.push_back(i);
+				revGr[i].count++;
+			}
+		}
+
+		for (int u : nodes)
+		{
+			revDfs(u, true, true);
+		}
+
+		for (int i = 0; i < n; i++)
+		{
+			if (used[i] == WIN) ss << "FIRST" << endl;
+			else if (used[i] == LOSE) ss << "SECOND" << endl;
+			else ss << "DRAW" << endl;
+		}
+		ss << endl;
+
+		Gr.clear();
+		revGr.clear();
+		used.clear();
+		nodes.clear();
+	}
+	cout << ss.str();
+	system("pause");
+}
