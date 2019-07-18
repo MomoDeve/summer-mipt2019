@@ -1,0 +1,60 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <unordered_set>
+#include <set>
+
+using namespace std;
+
+unordered_set<long long> loseValues;
+
+int main()
+{
+	unordered_set<long long> Tvalues;
+
+	long long t = 1;
+	for (int i = 0; i < 38; i++)
+	{
+		t = t * 2 + 1;
+		Tvalues.insert(t);
+	}
+
+	loseValues.reserve(2000003);
+	loseValues.insert(0);
+	loseValues.insert(2);
+
+	long long offset = 3;
+	long long init = 2;
+	for (int i = 1; true; i++)
+	{
+		if (init > 1000000000000) break;
+
+		if (Tvalues.find(offset - 1) == Tvalues.end())
+		{
+			init += offset;
+			loseValues.insert(init);
+			init += offset;
+			loseValues.insert(init);
+			offset++;
+		}
+		else
+		{
+			init += offset;
+			loseValues.insert(init);
+			offset++;
+		}
+	}
+
+	long long N;
+	cin >> N;
+	if (loseValues.find(N) != loseValues.end())
+	{
+		cout << "LOSE" << endl;
+	}
+	else
+	{
+		cout << "WIN" << endl;
+	}
+
+	system("pause");
+}
