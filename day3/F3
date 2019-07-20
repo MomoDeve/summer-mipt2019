@@ -1,0 +1,68 @@
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+#define SIZE 5001
+
+vector<int> Gr;
+
+int G(int size)
+{
+	if (Gr[size] == -1)
+	{
+		vector<bool> A(SIZE, false);
+		for (int i = 1; i <= size / 2; i++)
+		{
+			int xVal = G(size - i);
+			A[xVal] = true;
+		}
+		for (int i = 0; i < SIZE; i++)
+		{
+			if (!A[i])
+			{
+				Gr[size] = i;
+				break;
+			}
+		}
+	}
+	return Gr[size];
+}
+
+int main()
+{
+	Gr.resize(5001, -1);
+	Gr[1] = 0;
+	int a, b, c;
+	cin >> a >> b >> c;
+	if ((G(a) ^ G(b) ^ G(c)) == 0)
+	{
+		cout << "NO";
+	}
+	else
+	{
+		cout << "YES\n";
+		for (int i = 1; i <= max(a, max(b, c)); i++)
+		{
+			if (i < a && (G(a - i) ^ G(b) ^ G(c)) == 0)
+			{
+				printf("%d %d %d", a - i, b, c);
+				break;
+			}
+			else if (i < b && (G(a) ^ G(b - i) ^ G(c)) == 0)
+			{
+				printf("%d %d %d", a, b - i, c);
+				break;
+			}
+			else if (i < c && (G(a) ^ G(b) ^ G(c - i)) == 0)
+			{
+				printf("%d %d %d", a, b, c - i);
+				break;
+			}
+		}
+	}
+	
+	system("pause");
+	return 0;
+}
