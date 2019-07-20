@@ -1,0 +1,87 @@
+#pragma once
+
+#include <vector>
+#include <iostream>
+#include <exception>
+#include <initializer_list>
+#include <algorithm>
+#include <string>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <sstream>
+#include <iomanip>
+#include <bitset>
+
+using namespace std;
+
+#define SIZE 20000
+
+vector<vector<int> > Gr;
+
+#define cout cout << setw(2) 
+#undef cout
+
+void print()
+{
+	for (int i = 1; i < Gr.size(); i++)
+	{
+		for (int j = 1; j < Gr[i].size(); j++)
+		{
+			cout << Gr[i][j] << ' ';
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+int G(int x, int y)
+{
+	if (Gr[x][y] == -1)
+	{
+		vector<bool> A(SIZE, false);
+		if (x != 1)
+		{
+			for (int i = 1; i <= x / 2; i++)
+			{
+				int xVal = G(i, y) ^ G(x - i, y);
+				A[xVal] = true;
+			}
+		}
+		if (y != 1)
+		{
+			for (int j = 1; j <= y / 2; j++)
+			{
+				int xVal = G(x, j) ^ G(x, y - j);
+				A[xVal] = true;
+			}
+		}
+		for (int i = 0; i < SIZE; i++)
+		{
+			if (!A[i])
+			{
+				Gr[x][y] = i;
+				break;
+			}
+		}
+	}
+	return Gr[x][y];
+}
+
+int main()
+{
+	int N, M, K;
+	cin >> N >> M >> K;
+	Gr.resize(N + 1, vector<int>(M + 1, -1));
+	for (int i = 1; i <= min(N, K); i++)
+	{
+		Gr[i][1] = 0;
+	}
+	for (int i = 1; i <= min(M, K); i++)
+	{
+		Gr[1][i] = 0;
+	}
+	cout << (G(N, M) == 0 ? 2 : 1) << endl;
+	system("pause");
+}
