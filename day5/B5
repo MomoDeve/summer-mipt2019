@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <cmath>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <algorithm>
+#include <bitset>
+
+using namespace std;
+typedef long long ll;
+
+bool bit(int i, int mask)
+{
+	return mask & (1 << i);
+}
+
+int count_bits(int mask)
+{
+	int res = 0;
+	for (int i = 0; i < 8 * sizeof(mask); i++)
+	{
+		res += (mask & 1);
+		mask >>= 1;
+	}
+	return res;
+}
+
+vector<set<int> > A;
+vector<vector<long long> > dp;
+
+int main()
+{
+	int n;
+	cin >> n;
+	A.resize(n, set<int>());
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			int v;
+			cin >> v;
+			if (v) A[i].insert(j);
+		}
+	}
+	dp.resize(n + 1, vector<long long>(1 << n, 0));
+	int res = 0;
+	dp[0][0] = 1;
+	for (int student = 0; student < n; student++)
+	{
+		for (int mask = 0; mask < (1 << n); mask++)
+		{
+			if (dp[student][mask] > 0)
+			{
+				for (int j = 0; j < n; j++)
+				{
+					if (!bit(j, mask) && A[student].find(j) != A[student].end())
+					{
+						int newMask = mask | (1 << j);
+						dp[student + 1][newMask] += dp[student][mask];
+					}
+				}
+			}
+		}
+	}
+	cout << dp[n][(1 << n) - 1] << endl;
+	system("pause");
+}
