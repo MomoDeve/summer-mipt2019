@@ -1,0 +1,145 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <queue>
+
+using namespace std;
+
+struct node
+{
+	vector<int> to;
+	int count;
+};
+
+vector<vector<int> > Gr;
+vector<node> revGr;
+queue<int> q;
+vector<pair<int, int> > used;
+
+#define EMPTY 0
+#define WIN 1
+#define LOSE 2
+#define DRAW 3
+
+void revBfs(queue<int> Q)
+{
+	while (!Q.empty())
+	{
+		int v = Q.front();
+		Q.pop();
+		for (int u : revGr[v].to)
+		{
+			if (used[v].first == LOSE)
+			{
+				if(used[u].first == EMPTY)
+					used[u].first = WIN;
+				if (used[u].second > used[v].second + 1 && used[u].first == WIN)
+				{
+					used[u].second = used[v].second + 1;
+					Q.push(u);
+				}
+			}
+			else
+			{
+				revGr[u].count--;
+				if (revGr[u].count == 0)
+				{
+					if(used[u].first == EMPTY)
+						used[u].first = LOSE;
+				}
+				if (used[u].second > used[v].second + 1 && used[u].first == LOSE)
+				{
+					used[u].second = used[v].second + 1;
+					Q.push(u);
+				}
+			}
+		}
+	}
+}
+
+int main()
+{
+	vector<pair<int, int> > game_states[2];
+	ios_base::sync_with_stdio(false);
+	cin.tie(0);
+	stringstream ss;
+	int n, m, a, b;
+	Gr.reserve(100000);
+	revGr.reserve(100000);
+	used.reserve(100000);
+	for(int i = 0; i < 2; i++)
+	{
+		cin >> n;
+		Gr.resize(n);
+		revGr.resize(n);
+		used.assign(n, { EMPTY, INT_MAX });
+		cin >> m;
+		for (int i = 0; i < m; i++)
+		{
+			cin >> a >> b;
+			Gr[a - 1].push_back(b - 1);
+		}
+		for (int i = 0; i < n; i++)
+		{
+			if (Gr[i].empty())
+			{
+				q.push(i);
+				used[i].second = 0;
+				used[i].first = LOSE;
+			}
+			for (int u : Gr[i])
+			{
+				revGr[u].to.push_back(i);
+				revGr[i].count++;
+			}
+		}
+
+		revBfs(std::move(q));
+
+		game_states[i] = std::move(used);
+
+		Gr.clear();
+		revGr.clear();
+		used.clear();
+	}
+	int T;
+	cin >> T;
+	for (int i = 0; i < T; i++)
+	{
+		int a, b;
+		cin >> a >> b;
+		a--, b--;
+		if (game_states[0][a].first == WIN && game_states[1][b].first == WIN)
+		{
+			ss << "first\n";
+		}
+		else if (game_states[0][a].first == LOSE && game_states[1][b].first == LOSE)
+		{
+			ss << "second\n";
+		}
+		else
+		{
+			if (game_states[0][a].second < game_states[1][b].second)
+			{
+				if (game_states[0][a].first == WIN) ss << "first\n";
+				else ss << "second\n";
+			}
+			else if (game_states[0][a].second == game_states[1][b].second)
+			{
+				ss << "second\n";
+			}
+			else
+			{
+				if (game_states[1][b].first == WIN) ss << "first\n";
+				else ss << "second\n";
+			}
+		}
+	}
+	cout << ss.str();
+	system("pause");
+}
