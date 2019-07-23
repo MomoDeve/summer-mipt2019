@@ -1,0 +1,87 @@
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <iostream>
+#include <exception>
+#include <initializer_list>
+#include <bitset>
+
+using namespace std;
+
+vector<vector<int> > Gr;
+vector<int> color;
+vector<bool> banned;
+
+inline char invert(int color)
+{
+	return 3 - color;
+}
+
+bool dfs(int v, int c)
+{
+	if (banned[v]) return true;
+	color[v] = c;
+	for (int u : Gr[v])
+	{
+		if (color[u] == 0)
+		{
+			bool res = dfs(u, invert(c));
+			if (!res) return false;
+		}
+		else if (color[u] == c)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+int main()
+{
+	int N, K, v;
+	cin >> N;
+	Gr.resize(N);
+	color.resize(N);
+	banned.resize(N);
+	for (int i = 0; i < N; i++)
+	{
+		cin >> K;
+		for (int j = 0; j < K; j++)
+		{
+			cin >> v;
+			Gr[i].push_back(v - 1);
+			Gr[v - 1].push_back(i);
+		}
+	}
+	for (int i = 0; i < banned.size(); i++)
+	{
+		for (int j = i; j < banned.size(); j++)
+		{
+			bool res = true;
+			banned[i] = banned[j] = true;
+			for (int k = 0; k < N; k++)
+			{
+				if (!banned[k] && color[k] == 0)
+				{
+					if (!dfs(k, 1))
+					{
+						res = false;
+						break;
+					}
+				}
+			}
+			if (res)
+			{
+				cout << "Hurrah!";
+				//system("pause");
+				return 0;
+			}
+			color.assign(N, false);
+			banned[i] = banned[j] = false;
+		}
+	}
+	cout << "Fired.";
+	//system("pause");
+	return 0;
+}
