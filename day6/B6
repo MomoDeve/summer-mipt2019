@@ -1,0 +1,144 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <cmath>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <algorithm>
+#include <bitset>
+#include <algorithm>
+#include <climits>
+#include <numeric>
+#include <list>
+
+using namespace std;
+typedef long long ll;
+class block
+{
+	vector<int> A;
+	long long sum;
+	bool isAssigned;
+	int assignValue;
+
+	void push()
+	{
+		if (!isAssigned) return;
+		isAssigned = false;
+		A.assign(A.size(), assignValue);
+	}
+
+public:
+	block() { }
+
+	block(vector<int>&& A)
+		: A(move(A)), isAssigned(false), assignValue(0)
+	{
+		sum = accumulate(this->A.begin(), this->A.end(), 0LL);
+	}
+
+	size_t size() const
+	{
+		return A.size();
+	}
+
+	long long get_block_sum() const
+	{
+		return sum;
+	}
+
+	// interval [L; R)
+	long long get_partial_sum(int L, int R)
+	{
+		return accumulate(A.begin() + L, A.begin() + R, 0LL);
+	}
+
+	void assign(int pos, int x)
+	{
+		sum = sum - A[pos] + x;
+		A[pos] = x;
+	}
+
+	vector<int>& vec()
+	{
+		return A;
+	}
+};
+
+struct SQRT
+{
+	block blocks[1 << 20];
+	int blocksCount = 0;
+	size_t blockSize;
+	list<int> seq;
+	void build(int blockSize, int size)
+	{
+		this->blockSize = blockSize;
+		while (blocksCount > 0)
+		{
+			blocksCount--;
+			blocks[blocksCount].vec().clear();
+		}
+		for (int l = 0; l < size; l += blockSize)
+		{
+			blocks[blocksCount].vec().resize(blockSize);
+			seq.push_back(blocksCount);
+			blocksCount++;
+		}
+	}
+
+	long long get_sum(int L, int R)
+	{
+		long long sum = 0;
+		int l = 0, r;
+		for (auto it = seq.begin(); it != seq.end(); it++, l = r)
+		{
+			int blockPos = *it;
+			block& b = blocks[blockPos];
+			r = l + b.size();
+			if (r <= L || R <= l)
+			{
+				continue;
+			}
+			else if (L <= l && r <= R)
+			{
+				sum += b.get_block_sum();
+			}
+			else
+			{
+				sum += b.get_partial_sum(max(L, l) - l, min(r, R) - l);
+			}
+		}
+		return sum;
+	}
+
+} mySqrt;
+
+
+
+int main()
+{
+	stringstream ss;
+	int N, K;
+	cin >> N >> K;
+	mySqrt.build((int)sqrt(N), N);
+	for (int i = 0; i < K; i++)
+	{
+		char q;
+		int arg1, arg2;
+		cin >> q >> arg1 >> arg2;
+		if (q == 'A')
+		{
+			mySqrt.blocks[arg1 / mySqrt.blockSize].assign(arg1 % mySqrt.blockSize, arg2);
+		}
+		else
+		{
+			ss << mySqrt.get_sum(arg1, arg2 + 1) << '\n';
+		}
+	}
+	cout << ss.str() << endl;
+	system("pause");
+}
