@@ -1,0 +1,142 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <cmath>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <algorithm>
+#include <bitset>
+#include <algorithm>
+#include <climits>
+
+using namespace std;
+typedef long long ll;
+
+#include <vector>
+#include <list>
+#include <numeric>
+
+class block
+{
+	vector<int> A;
+	long long min;
+	bool isAssigned;
+	int assignValue;
+
+	void push()
+	{
+		if (!isAssigned) return;
+		isAssigned = false;
+		A.assign(A.size(), assignValue);
+	}
+
+public:
+	block() { min = INT_MAX; }
+
+	block(vector<int>&& A)
+		: A(move(A)), isAssigned(false), assignValue(0)
+	{
+		count_block_min();
+	}
+
+	long long get_block_min() const
+	{
+		return min;
+	}
+
+	// interval [L; R)
+	long long get_partial_min(int L, int R)
+	{
+		push();
+		return accumulate(A.begin() + L, A.begin() + R, INT_MAX, [](int min, int el) { return min < el ? min : el; });
+	}
+
+	void count_block_min()
+	{
+		min = accumulate(this->A.begin(), this->A.end(), INT_MAX, [](int min, int el) { return min < el ? min : el; });
+	}
+
+	vector<int>& vec()
+	{
+		return A;
+	}
+
+	size_t size()
+	{
+		return A.size();
+	}
+};
+
+struct SQRT
+{
+	block blocks[1 << 20];
+	int blocksCount = 0;
+	int blockSize = 0;
+	list<int> seq;
+} mySqrt;
+
+void build(const vector<int>& A, int blockSize)
+{
+	while (mySqrt.blocksCount > 0)
+	{
+		mySqrt.blocksCount--;
+		mySqrt.blocks[mySqrt.blocksCount].vec().clear();
+	}
+	for (int l = 0; l < A.size();)
+	{
+		int r = min((int)A.size(), l + blockSize);
+		mySqrt.blocks[mySqrt.blocksCount].vec().insert(mySqrt.blocks[mySqrt.blocksCount].vec().begin(), A.begin() + l, A.begin() + r);
+		mySqrt.blocks[mySqrt.blocksCount].count_block_min();
+		mySqrt.seq.push_back(mySqrt.blocksCount);
+		mySqrt.blocksCount++;
+		l = r;
+	}
+}
+
+long long get_min(int L, int R)
+{
+	long long minVal = INT_MAX;
+	int l = 0, r;
+	for (auto it = mySqrt.seq.begin(); it != mySqrt.seq.end(); it++, l = r)
+	{
+		int blockPos = *it;
+		block& b = mySqrt.blocks[blockPos];
+		r = l + b.size();
+		if (r <= L || R <= l)
+		{
+			continue;
+		}
+		else if (L <= l && r <= R)
+		{
+			minVal = min(minVal, b.get_block_min());
+		}
+		else
+		{
+			minVal = min(minVal, b.get_partial_min(max(L, l) - l, min(r, R) - l));
+		}
+	}
+	return minVal;
+}
+
+int main()
+{
+	int N, K;
+	cin >> N >> K;
+	vector<int> A(N);
+	for (int i = 0; i < N; i++)
+	{
+		cin >> A[i];
+	}
+	int blocksize = max((int)sqrt(N), K);
+	build(A, blocksize);
+	for (int i = 0; i < N - K + 1; i++)
+	{
+		cout << get_min(i, i + K) << ' ';
+	}
+
+	system("pause");
+}
