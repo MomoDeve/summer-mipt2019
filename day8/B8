@@ -1,0 +1,103 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <queue>
+#include <map>
+#include <fstream>
+
+using namespace std;
+
+struct point
+{
+	int x, y, id;
+};
+
+bool cmpX(const point& p1, const point& p2)
+{
+	if (p1.x == p2.x) return p1.y < p2.y;
+	return p1.x < p2.x;
+}
+
+bool cmpY(const point& p1, const point& p2)
+{
+	if (p1.y == p2.y) return p1.x < p2.x;
+	return p1.y < p2.y;
+}
+
+double dist(const point& p1, const point& p2)
+{
+	return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+}
+
+int p1ans, p2ans;
+double minDist = 1e20;
+#define MAXSIZE 200000
+
+void closestPair(vector<point>& P, int l, int r)
+{
+	if (r - l < 4)
+	{
+		for (int i = l; i < r; i++)
+		{
+			for (int j = i + 1; j < r; j++)
+			{
+				double d = dist(P[i], P[j]);
+				if (d < minDist)
+				{
+					minDist = d;
+					p1ans = P[i].id, p2ans = P[j].id;
+				}
+			}
+		}
+		sort(P.begin() + l, P.begin() + r, &cmpY);
+		return;
+	}
+	int m = (l + r) / 2;
+	int midX = P[m].x;
+	closestPair(P, l, m);
+	closestPair(P, m, r);
+	static point T[MAXSIZE];
+	merge(P.begin() + l, P.begin() + m, P.begin() + m, P.begin() + r, T, &cmpY);
+	copy(T, T + r - l, P.begin() + l);
+
+	int size = 0;
+	for (int i = l; i < r; i++)
+	{
+		if (abs(P[i].x - midX) < minDist)
+		{
+			for (int j = size - 1; (j >= 0) && (P[i].y - T[j].y < minDist); j--)
+			{
+				double d = dist(P[i], T[j]);
+				if (d < minDist)
+				{
+					minDist = d;
+					p1ans = P[i].id, p2ans = T[j].id;
+				}
+			}
+			T[size++] = P[i];
+		}
+	}
+}
+
+int main()
+{
+	vector<point> P;
+	int N;
+	cin >> N;
+	for (int i = 0; i < N; i++)
+	{
+		int x, y;
+		cin >> x >> y;
+		P.push_back({ x, y, i });
+	}
+	sort(P.begin(), P.end(), &cmpX);
+	closestPair(P, 0, P.size());
+	cout.precision(6);
+	cout << fixed << minDist << endl;
+	system("pause");
+}
