@@ -6,8 +6,6 @@
 
 using namespace std;
 
-unordered_set<long long> loseValues;
-
 int main()
 {
 	unordered_set<long long> Tvalues;
@@ -19,42 +17,47 @@ int main()
 		Tvalues.insert(t);
 	}
 
-	loseValues.reserve(2000003);
-	loseValues.insert(0);
-	loseValues.insert(2);
+	long long N;
+	cin >> N;
+	if (N == 0 || N == 2)
+	{
+		cout << "LOSE";
+		return 0;
+	}
 
 	long long offset = 3;
 	long long init = 2;
-	for (int i = 1; true; i++)
+	for (int i = 1; true; i++)//
 	{
 		if (init > 1000000000000) break;
 
 		if (Tvalues.find(offset - 1) == Tvalues.end())
 		{
 			init += offset;
-			loseValues.insert(init);
+			if (init == N)
+			{
+				cout << "LOSE";
+				return 0;
+			}
 			init += offset;
-			loseValues.insert(init);
+			if (init == N)
+			{
+				cout << "LOSE";
+				return 0;
+			}
 			offset++;
 		}
 		else
 		{
 			init += offset;
-			loseValues.insert(init);
+			if (init == N)
+			{
+				cout << "LOSE";
+				return 0;
+			}
 			offset++;
 		}
 	}
-
-	long long N;
-	cin >> N;
-	if (loseValues.find(N) != loseValues.end())
-	{
-		cout << "LOSE" << endl;
-	}
-	else
-	{
-		cout << "WIN" << endl;
-	}
-
+	cout << "WIN";
 	system("pause");
 }
