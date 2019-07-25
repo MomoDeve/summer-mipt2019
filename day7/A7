@@ -1,0 +1,61 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <queue>
+#include <unordered_map>
+
+using namespace std;
+
+
+vector<string> A;
+
+struct Node
+{
+	unordered_map<char, int> children;
+	int numEnds;
+	int numInSubTree = 0;
+	int suffixLink = -1;
+	int longSuffixLink = -1;
+};
+
+Node bor[1 << 20];
+int borSize = 1;
+size_t res = 0;
+
+void insertToBor(const string& s)
+{
+	int v = 0;
+	bor[0].numInSubTree++;
+	for (int i = 0; i < s.size(); i++)
+	{
+		char c = s[i];
+		if (!bor[v].children.count(c))
+		{
+			bor[v].children[c] = borSize;
+			borSize++;
+		}
+		v = bor[v].children[c];
+		bor[v].numInSubTree++;
+	}
+	bor[v].numEnds++;
+	if (bor[v].numEnds == 1) res++;
+}
+
+int main()
+{
+	int N;
+	cin >> N;
+	string s;
+	for (int i = 0; i < N; i++)
+	{
+		cin >> s;
+		insertToBor(s);
+	}
+	cout << res << endl;
+	system("pause");
+}
