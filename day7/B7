@@ -1,0 +1,85 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <queue>
+#include <map>
+
+using namespace std;
+
+string s;
+vector<string> A;
+vector<int> isSubstring;
+
+struct Node
+{
+	map<char, int> children;
+	vector<int> endId;
+};
+
+Node bor[1 << 19];
+int borSize = 1;
+size_t res = 0;
+
+void insertToBor(const string& s, int stringID)
+{
+	int v = 0;
+	for (int i = 0; i < s.size(); i++)
+	{
+		char c = s[i];
+		if (bor[v].children.count(c) == 0)
+		{
+			bor[v].children[c] = borSize;
+			borSize++;
+		}
+		v = bor[v].children[c];
+	}
+	bor[v].endId.push_back(stringID);
+}
+
+void findInBor(int l, int r)
+{
+	int v = 0;
+	for (int i = l; i < r; i++)
+	{
+		char c = s[i];
+		if (bor[v].children.count(c) == 0)
+		{
+			return;
+		}
+		v = bor[v].children[c];
+		for (int id : bor[v].endId)
+		{
+			isSubstring[id] = true;
+		}
+	}
+}
+
+int main()
+{
+	string t;
+	cin >> s;
+	int N;
+	cin >> N;
+	A.resize(N);
+	isSubstring.resize(N);
+	for (int i = 0; i < N; i++)
+	{
+		cin >> A[i];
+		insertToBor(A[i], i);
+	}
+	int size = 30;
+	for (int i = 0; i < s.size(); i++)
+	{
+		findInBor(i, min(i + 30, (int)s.size()));
+	}
+	for (int ans : isSubstring)
+	{
+		cout << (ans == true ? "Yes" : "No") << endl;
+	}
+	system("pause");
+}
