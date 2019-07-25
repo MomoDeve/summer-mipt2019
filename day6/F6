@@ -1,0 +1,170 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <cmath>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <algorithm>
+#include <bitset>
+#include <algorithm>
+#include <climits>
+#include <numeric>
+#include <list>
+
+using namespace std;
+typedef long long ll;
+
+class block
+{
+	vector<int> A;
+	vector<int> sortedA;
+	bool isSorted;
+	int delta;
+public:
+	block(vector<int> vec) : A(std::move(vec)), isSorted(true), delta(0)
+	{
+		sortedA = A;
+		sort(sortedA.begin(), sortedA.end());
+	}
+
+	vector<int>& vec()
+	{
+		return A;
+	}
+
+	bool findInBlock(int x)
+	{
+		if (!isSorted)
+		{
+			sort(sortedA.begin(), sortedA.end());
+			isSorted = true;
+		}
+		return binary_search(sortedA.begin(), sortedA.end(), x - delta);
+	}
+
+	bool findInRange(int x, int l, int r)
+	{
+		return std::find(A.begin() + l, A.begin() + r, x - delta) != A.begin() + r;
+	}
+
+	void addOnBlock(int x)
+	{
+		delta += x;
+	}
+	
+	void addOnRange(int x, int l, int r)
+	{
+		isSorted = false;
+		transform(A.begin() + l, A.begin() + r, A.begin() + l, [x](int val) { return x + val; });
+		sortedA = A;
+	}
+};
+
+struct SQRT
+{
+	vector<block> blocks;
+	size_t blockSize;
+
+	void build(int blockSize, const vector<int>& A)
+	{
+		blocks.reserve(A.size() / blockSize + 4); // 4 is just a some additional constant to avoid copying on emplace_back
+		this->blockSize = blockSize;
+		int r;
+		for (int l = 0; l < A.size();)
+		{
+			int r = min((int)A.size(), l + blockSize);
+			blocks.push_back(block(vector<int>(A.begin() + l, A.begin() + r)));
+			l = r;
+		}
+	}
+
+	void applyDelta(int x, int l, int r)
+	{
+		int L = 0, R;
+		for (int i = 0; i < blocks.size(); i++, L = R)
+		{
+			block& b = blocks[i];
+			R = L + blockSize;
+			if (R <= l || r <= L)
+			{
+				continue;
+			}
+			else if (l <= L && R <= r)
+			{
+				b.addOnBlock(x);
+			}
+			else
+			{
+				b.addOnRange(x, max(L, l) - L, min(r, R) - L);
+			}
+		}
+	}
+
+	bool find(int x, const int l, const int r)
+	{
+		int L = 0, R;
+		for (int i = 0; i < blocks.size(); i++, L = R)
+		{
+			block& b = blocks[i];
+			R = L + blockSize;
+			if (R <= l || r <= L)
+			{
+				continue;
+			}
+			else if (l <= L && R <= r)
+			{
+				if (b.findInBlock(x)) return true;
+			}
+			else
+			{
+				if (b.findInRange(x, max(L, l) - L, min(r, R) - L)) return true;
+			}
+		}
+		return false;
+	}
+
+	
+} mySqrt;
+
+
+
+int main()
+{
+	stringstream ss;
+	vector<int> A;
+	int n, k;
+	cin >> n >> k;
+	A.resize(n);
+	for (int i = 0; i < n; i++)
+	{
+		cin >> A[i];
+	}
+	mySqrt.build(sqrt(n), A);
+	for (int i = 0; i < k; i++)
+	{
+		char command;
+		int x, l, r;
+		cin >> command >> l >> r >> x;
+		if (command == '+')
+		{
+			mySqrt.applyDelta(x, l - 1, r);
+		}
+		else
+		{
+			if (mySqrt.find(x, l - 1, r))
+			{
+				ss << "YES\n";
+			}
+			else
+			{
+				ss << "NO\n";
+			}
+		}
+	}
+	cout << ss.str();
+	system("pause");
+}
