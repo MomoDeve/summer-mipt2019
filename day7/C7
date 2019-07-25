@@ -1,0 +1,91 @@
+#include<iostream>
+#include <vector>
+#include <cmath>
+#include <set>
+#include <functional>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <queue>
+#include <map>
+#include <fstream>
+
+using namespace std;
+
+vector<string> A;
+
+struct Node
+{
+	map<char, int> children;
+	size_t size;
+	bool isEnd = false;
+};
+
+Node bor[1 << 20];
+int borSize = 1;
+size_t res = 0;
+
+void insertToBor(const string& s)
+{
+	int v = 0;
+	for (int i = 0; i < s.size(); i++)
+	{
+		char c = s[i];
+		bor[v].size++;
+		if (bor[v].children.count(c) == 0)
+		{
+			bor[v].children[c] = borSize;
+			borSize++;
+		}
+		v = bor[v].children[c];
+	}
+	bor[v].isEnd = true;
+}
+
+string findKstring(int k)
+{
+	string res;
+	int v = 0;
+	int sum = 0;
+	while (bor[v].size > 0)
+	{
+		pair<char, int> u;
+		for (const auto& p : bor[v].children)
+		{		
+			u = p;
+			if (bor[u.second].isEnd) sum++;
+			if (sum == k) return res + u.first;
+			if (sum + bor[u.second].size >= k)
+			{
+				break;
+			}
+			sum += bor[u.second].size;
+		}
+		res += u.first;
+		v = u.second;
+	}
+	return res;
+}
+
+int main()
+{
+	stringstream ss;
+	string s;
+	int n;
+	cin >> n;
+	for (int i = 0; i < n; i++)
+	{
+		cin >> s;
+		if (s[0] >= '0' && s[0] <= '9')
+		{
+			int m = stoi(s);
+			ss << findKstring(m) << endl;
+		}
+		else
+		{
+			insertToBor(s);
+		}
+	}
+	cout << ss.str();
+	system("pause");
+}
